@@ -135,10 +135,16 @@ function remove_android_library_folder(){
     update_and_echo_free_space "before"
     
     # Remove Android SDK directories (common locations)
-    sudo rm -rf /usr/local/lib/android || true
-    sudo rm -rf /opt/android || true
-    sudo rm -rf /usr/local/android-sdk || true
-    sudo rm -rf /home/runner/Android || true
+    # Create an empty directory if it doesn't exist
+    empty_dir=$(mktemp -d)
+
+    sudo rsync -a --delete "$empty_dir"/ /usr/local/lib/android/
+    sudo rsync -a --delete "$empty_dir"/ /opt/android/
+    sudo rsync -a --delete "$empty_dir"/ /usr/local/android-sdk/
+    sudo rsync -a --delete "$empty_dir"/ /home/runner/Android/
+
+    # Remove the temporary empty directory
+    rm -rf "$empty_dir"
     
     # Remove Android packages if they exist
     ANDROID_PACKAGES=$(dpkg -l | grep -E "^ii.*(android|adb)" | awk '{print $2}' | tr '\n' ' ' || true)
